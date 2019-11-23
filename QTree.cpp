@@ -93,25 +93,22 @@ void QTree::split(Node *t)
 {
 
   /* YOUR CODE HERE */
-  if (t == NULL || numLeaf >= leafBound)
+  if (t == NULL || numLeaf >= leafBound || t->size == 1)
     return;
 
-  numLeaf++;
   t->nw = new Node(im, make_pair(t->upLeft.first, t->upLeft.second), t->size / 2, t);
   nodesQ.push(t->nw);
 
-  numLeaf++;
   t->ne = new Node(im, make_pair(t->upLeft.first+t->size/2, t->upLeft.second), t->size / 2, t);
   nodesQ.push(t->ne);
 
-  numLeaf++;
   t->sw = new Node(im, make_pair(t->upLeft.first, t->upLeft.second+t->size/2), t->size / 2, t);
   nodesQ.push(t->sw);
 
-  numLeaf++;
   t->se = new Node(im, make_pair(t->upLeft.first+t->size/2, t->upLeft.second+t->size/2), t->size / 2, t);
   nodesQ.push(t->se);
-  
+
+  numLeaf += 4;
   // FOR BALANCED QTREES-------------------------------------------------
   // A split might cause one or two nbrs of the parent of t to split
   // to maintain balance.  Note that these two nbrs exist (unless they're
