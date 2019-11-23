@@ -39,6 +39,7 @@ private:
   public:
     // Node constructors
     Node(PNG &imIn, pair<int, int> ul, int size, Node *par);
+    Node(const Node &other);
 
     pair<int, int> upLeft; // upper-left coords of Node's subimage
     int size;              // side length of Node's subimage in pixels
@@ -157,7 +158,7 @@ private:
   bool balanced = false;  // true=create balanced QTree
   bool drawFrame = false; // true=draw 1 pixel frame around every leaf square
   RGBAPixel frameColor;   // color of frame if drawn
-
+  priority_queue<Node*> nodesQ;
   /* =================== private PA3 functions ============== */
 
   /**
@@ -193,15 +194,15 @@ private:
    * You may want a recursive helper function for this one.
    */
   void clear();
-
+  void clearHelper(Node* node);
   /**
    * Copies the "other" QTree into the current QTree.
    * Does not free any memory. Called by copy constructor and op=.
    * You may want a recursive helper function for this one.
    * @param other The QTree to be copied.
    */
-  void copy(const QTree &other);
-
+  void copy(const QTree &orig);
+  void copyHelper(Node *subRoot);
   /* =================== end of private PA3 functions ============== */
 };
 
