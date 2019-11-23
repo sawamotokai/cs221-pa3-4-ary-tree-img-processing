@@ -39,7 +39,7 @@ private:
   public:
     // Node constructors
     Node(PNG &imIn, pair<int, int> ul, int size, Node *par);
-    Node(Node *other);
+    Node(Node *other, Node* parent);
 
     pair<int, int> upLeft; // upper-left coords of Node's subimage
     int size;              // side length of Node's subimage in pixels
@@ -141,7 +141,6 @@ public:
    * You may want a recursive helper function for this one.
    */
   bool write(string const &fileName);
-  void writeHelper(Node *node);
   /* =============== end of public PA3 FUNCTIONS =========================*/
 
 private:
@@ -160,6 +159,9 @@ private:
   RGBAPixel frameColor;   // color of frame if drawn
   priority_queue<Node*> nodesQ;
   /* =================== private PA3 functions ============== */
+  void writeHelper(Node *node);
+  void clearHelper(Node* node);
+  void copyHelper(Node *&subRoot, Node* origNode);
 
   /**
    * Private helper function for the constructor. Splits the given
@@ -194,7 +196,6 @@ private:
    * You may want a recursive helper function for this one.
    */
   void clear();
-  void clearHelper(Node* node);
   /**
    * Copies the "other" QTree into the current QTree.
    * Does not free any memory. Called by copy constructor and op=.
@@ -202,7 +203,6 @@ private:
    * @param other The QTree to be copied.
    */
   void copy(const QTree &orig);
-  void copyHelper(Node *subRoot, const QTree &orig);
   /* =================== end of private PA3 functions ============== */
 };
 

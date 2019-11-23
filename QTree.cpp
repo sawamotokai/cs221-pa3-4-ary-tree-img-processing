@@ -25,6 +25,13 @@ QTree::Node::Node(PNG &im, pair<int, int> ul, int sz, Node *par)
   var = varAndAvg(im, ul, size, avg);
 }
 
+// Defined by Kai
+QTree::Node::Node(Node *other, Node* parent)
+    : upLeft(other->upLeft), size(other->size), parent(parent), nw(other->nw), ne(other->ne), sw(other->sw), se(other->se), var(other->var), avg(other->avg)
+{
+}
+
+
 QTree::~QTree()
 {
   clear();
@@ -74,13 +81,6 @@ QTree::QTree(PNG &imIn, int leafB, bool bal)
     numLeaf--;
     split(t);
   }
-}
-
-
-// Defined by Kai
-QTree::Node::Node(Node *other)
-    : upLeft(other->upLeft), size(other->size), parent(other->parent), nw(other->nw), ne(other->ne), sw(other->sw), se(other->se), var(other->var), avg(other->avg)
-{
 }
 
 
@@ -219,27 +219,46 @@ void QTree::clearHelper(Node *node) {
 
 
 
-void QTree::copyHelper(Node *subRoot, const QTree &orig)
+void QTree::copyHelper(Node *&subRoot, Node* origNode)
 {
-  if (subRoot==NULL || isLeaf(subRoot))
+  if (origNode==NULL)
     return;
-  Node *node = new Node(subRoot);
-  node->parent = subRoot;
-  copyHelper(subRoot->ne, orig);
-  copyHelper(subRoot->se, orig);
-  copyHelper(subRoot->nw, orig);
-  copyHelper(subRoot->sw, orig);
+
+  if (origNode->ne != NULL)
+    subRoot->ne = new Node(origNode->ne, subRoot);
+  else
+    subRoot->ne = NULL;
+
+  if (origNode->nw != NULL)
+    subRoot->nw = new Node(origNode->nw, subRoot);
+  else
+    subRoot->nw = NULL;
+
+  if (origNode->se != NULL)
+    subRoot->se = new Node(origNode->se, subRoot);
+  else
+    subRoot->se = NULL;
+
+  if (origNode->sw != NULL)
+    subRoot->sw = new Node(origNode->sw, subRoot);
+  else
+    subRoot->sw = NULL;
+
+  copyHelper(root->ne, origNode->ne);
+  copyHelper(root->nw, origNode->nw);
+  copyHelper(root->se, origNode->se);
+  copyHelper(root->sw, origNode->sw);
 }
 
 void QTree::copy(const QTree &orig)
 {
-  root = new Node(orig.root);
+  root = new Node(orig.root, NULL);
   numLeaf = orig.numLeaf;
   im = orig.im;
   leafBound = orig.leafBound;
   balanced = orig.balanced;
   drawFrame = orig.drawFrame;
   frameColor = orig.frameColor;
-  copyHelper(root, orig);
+  copyHelper(root, orig.root);
   /* YOUR CODE HERE */
 }
