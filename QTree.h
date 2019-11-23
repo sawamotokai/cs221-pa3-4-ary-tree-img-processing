@@ -39,7 +39,7 @@ private:
   public:
     // Node constructors
     Node(PNG &imIn, pair<int, int> ul, int size, Node *par);
-    Node(const Node &other);
+    Node(Node *other);
 
     pair<int, int> upLeft; // upper-left coords of Node's subimage
     int size;              // side length of Node's subimage in pixels
@@ -202,7 +202,7 @@ private:
    * @param other The QTree to be copied.
    */
   void copy(const QTree &orig);
-  void copyHelper(Node *subRoot);
+  void copyHelper(Node *subRoot, const QTree &orig);
   /* =================== end of private PA3 functions ============== */
 };
 

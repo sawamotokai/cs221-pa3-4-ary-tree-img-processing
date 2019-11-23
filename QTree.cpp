@@ -76,6 +76,14 @@ QTree::QTree(PNG &imIn, int leafB, bool bal)
   }
 }
 
+
+// Defined by Kai
+QTree::Node::Node(Node *other)
+    : upLeft(other->upLeft), size(other->size), parent(other->parent), nw(other->nw), ne(other->ne), sw(other->sw), se(other->se), var(other->var), avg(other->avg)
+{
+}
+
+
 bool QTree::isLeaf(Node *t)
 {
   return !(t->ne || t->nw || t->se || t->sw);
@@ -99,7 +107,7 @@ void QTree::split(Node *t)
   numLeaf++;
   t->sw = new Node(im, make_pair(t->upLeft.first, t->upLeft.second+t->size/2), t->size / 2, t);
   nodesQ.push(t->sw);
-  
+
   numLeaf++;
   t->se = new Node(im, make_pair(t->upLeft.first+t->size/2, t->upLeft.second+t->size/2), t->size / 2, t);
   nodesQ.push(t->se);
@@ -174,8 +182,7 @@ void QTree::writeHelper(Node *node)
     writeHelper(node->se);
     writeHelper(node->nw);
     writeHelper(node->sw);
-  }
-  else {
+  } else {
     int xStart = node->upLeft.first;
     int yStart = node->upLeft.second;
     for (int x = xStart; x < xStart + node->size; x++)
@@ -197,45 +204,45 @@ void QTree::writeHelper(Node *node)
 void QTree::clear()
 {
   clearHelper(root);
+  // delete this;
   /* YOUR CODE HERE */
 }
 
 void QTree::clearHelper(Node *node) {
-  
+  if (node==NULL)
+    return;
+  clearHelper(node->ne);
+  clearHelper(node->nw);
+  clearHelper(node->sw);
+  clearHelper(node->se);
+  delete (node);
 }
 
-void QTree::copyHelper(Node *subRoot)
+
+
+
+
+void QTree::copyHelper(Node *subRoot, const QTree &orig)
 {
   if (subRoot==NULL || isLeaf(subRoot))
     return;
-
-  // new Node()
-
-  // copy(subRoot->ne);
-  // copy(subRoot->se);
-  // copy(subRoot->nw);
-  // copy(subRoot->sw);
-}
-
-QTree::Node::Node(const Node &other)
-    : upLeft(other.upLeft), size(other.size), parent(other.parent), nw(other.nw), ne(other.ne), sw(other.sw), se(other.se), var(other.var), avg(other.avg)
-{
+  Node *node = new Node(subRoot);
+  node->parent = subRoot;
+  copyHelper(subRoot->ne, orig);
+  copyHelper(subRoot->se, orig);
+  copyHelper(subRoot->nw, orig);
+  copyHelper(subRoot->sw, orig);
 }
 
 void QTree::copy(const QTree &orig)
 {
-  root = orig.root;
+  root = new Node(orig.root);
   numLeaf = orig.numLeaf;
   im = orig.im;
-  // root = new Node(orig.root);
   leafBound = orig.leafBound;
   balanced = orig.balanced;
   drawFrame = orig.drawFrame;
   frameColor = orig.frameColor;
-
-  copyHelper(root->ne);
-  copyHelper(root->se);
-  copyHelper(root->nw);
-  copyHelper(root->sw);
+  copyHelper(root, orig);
   /* YOUR CODE HERE */
 }
