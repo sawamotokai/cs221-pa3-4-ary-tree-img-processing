@@ -157,7 +157,10 @@ private:
   bool balanced = false;  // true=create balanced QTree
   bool drawFrame = false; // true=draw 1 pixel frame around every leaf square
   RGBAPixel frameColor;   // color of frame if drawn
-  priority_queue<Node*> nodesQ;
+  struct compare {
+    bool operator()(Node *a, Node *b) { return(a->var < b->var); };
+  };
+  priority_queue< Node *,vector<Node *>,compare> nodesQ;
   /* =================== private PA3 functions ============== */
   void writeHelper(Node *node);
   void clearHelper(Node* node);
