@@ -27,8 +27,16 @@ QTree::Node::Node(PNG &im, pair<int, int> ul, int sz, Node *par)
 
 // Defined by Kai
 QTree::Node::Node(Node *other, Node* parent)
-    : upLeft(other->upLeft), size(other->size), parent(parent), nw(other->nw), ne(other->ne), sw(other->sw), se(other->se)
 {
+  if (other == NULL)
+    return;
+  this->upLeft = other->upLeft;
+  this->size = other->size;
+  this->parent = parent;
+  this->nw = other->nw;
+  this->ne = other->ne;
+  this->sw = other->sw;
+  this->se = other->se;
   this->var = other->var;
   this->avg = other->avg;
 }
@@ -64,6 +72,7 @@ QTree::QTree(PNG &imIn, int leafB, RGBAPixel frameC, bool bal)
   while (!nodesQ.empty()) {
     Node* t = nodesQ.top(); 
     nodesQ.pop();
+    numLeaf--;
     split(t);
   }
 }
@@ -87,13 +96,15 @@ QTree::QTree(PNG &imIn, int leafB, bool bal)
 
 bool QTree::isLeaf(Node *t)
 {
+  if (t==NULL)
+    return false;
   return !(t->ne || t->nw || t->se || t->sw);
 }
 
 void QTree::split(Node *t)
 {
   /* YOUR CODE HERE */
-  if (t == NULL || numLeaf >= leafBound || t->size == 1)
+  if (t == NULL || numLeaf >= leafBound || t->size <= 1)
     return;
   t->nw = new Node(im, make_pair(t->upLeft.first, t->upLeft.second), t->size / 2, t);
   nodesQ.push(t->nw);
@@ -114,12 +125,16 @@ void QTree::split(Node *t)
   // South and East) nbrs of t->parent have children. If they don't
   // we need to split them.
   if (balanced) {
-    if (t==t->parent->ne) {
-      if (isLeaf(NNbr(t->parent)) && NNbr(t->parent)->size == t->parent->size)
-      split(NNbr(t->parent));
-      if (isLeaf(ENbr(t->parent)) && ENbr(t->parent)->size == t->parent->size)
-        split(ENbr(t->parent));
+    if (t->parent==NULL) 
+      return;
+      if (t == t->parent->ne)
+      {
+        if (isLeaf(NNbr(t->parent)) && NNbr(t->parent)->size == t->parent->size)
+          split(NNbr(t->parent));
+        if (isLeaf(ENbr(t->parent)) && ENbr(t->parent)->size == t->parent->size)
+          split(ENbr(t->parent));
     }
+
     else if (t==t->parent->nw) {
       if (isLeaf(NNbr(t->parent)) && NNbr(t->parent)->size == t->parent->size)
         split(NNbr(t->parent));
@@ -175,8 +190,9 @@ QTree::Node *QTree::NNbr(Node *t)
  */
 QTree::Node *QTree::SNbr(Node *t)
 {
-  if (t==NULL || t->parent==NULL)
+  if (t==NULL || t->parent==NULL) {
     return NULL;
+  }
   Node *ret = NULL;
   if (t == t->parent->ne) // t is upper right of its parent
     ret = t->parent->se;
