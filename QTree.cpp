@@ -101,20 +101,25 @@ bool QTree::isLeaf(Node *t)
   return !(t->ne || t->nw || t->se || t->sw);
 }
 
+void QTree::splitHelper(Node *t) {
+  t->ne = new Node(im, make_pair(t->upLeft.first+t->size/2, t->upLeft.second), t->size / 2, t);
+  nodesQ.push(t->ne);
+  t->se = new Node(im, make_pair(t->upLeft.first+t->size/2, t->upLeft.second+t->size/2), t->size / 2, t);
+  nodesQ.push(t->se);
+  t->sw = new Node(im, make_pair(t->upLeft.first, t->upLeft.second+t->size/2), t->size / 2, t);
+  nodesQ.push(t->sw);
+  t->nw = new Node(im, make_pair(t->upLeft.first, t->upLeft.second), t->size / 2, t);
+  nodesQ.push(t->nw);
+  
+  numLeaf += 4;
+}
+
 void QTree::split(Node *t)
 {
   /* YOUR CODE HERE */
   if (t == NULL || numLeaf >= leafBound || t->size <= 1)
     return;
-  t->nw = new Node(im, make_pair(t->upLeft.first, t->upLeft.second), t->size / 2, t);
-  nodesQ.push(t->nw);
-  t->ne = new Node(im, make_pair(t->upLeft.first+t->size/2, t->upLeft.second), t->size / 2, t);
-  nodesQ.push(t->ne);
-  t->sw = new Node(im, make_pair(t->upLeft.first, t->upLeft.second+t->size/2), t->size / 2, t);
-  nodesQ.push(t->sw);
-  t->se = new Node(im, make_pair(t->upLeft.first+t->size/2, t->upLeft.second+t->size/2), t->size / 2, t);
-  nodesQ.push(t->se);
-  numLeaf += 4;
+  splitHelper(t);
   // FOR BALANCED QTREES-------------------------------------------------
   // A split might cause one or two nbrs of the parent of t to split
   // to maintain balance.  Note that these two nbrs exist (unless they're
@@ -127,31 +132,30 @@ void QTree::split(Node *t)
   if (balanced) {
     if (t->parent==NULL) 
       return;
-      if (t == t->parent->ne)
+    if (t == t->parent->ne)
       {
         if (isLeaf(NNbr(t->parent)) && NNbr(t->parent)->size == t->parent->size)
-          split(NNbr(t->parent));
+          splitHelper(NNbr(t->parent));
         if (isLeaf(ENbr(t->parent)) && ENbr(t->parent)->size == t->parent->size)
-          split(ENbr(t->parent));
-    }
-
-    else if (t==t->parent->nw) {
-      if (isLeaf(NNbr(t->parent)) && NNbr(t->parent)->size == t->parent->size)
-        split(NNbr(t->parent));
-      if (isLeaf(WNbr(t->parent)) && WNbr(t->parent)->size == t->parent->size)
-        split(WNbr(t->parent));
+          splitHelper(ENbr(t->parent));
     }
     else if (t==t->parent->se) {
       if (isLeaf(SNbr(t->parent)) && SNbr(t->parent)->size == t->parent->size)
-        split(SNbr(t->parent));
+        splitHelper(SNbr(t->parent));
       if (isLeaf(ENbr(t->parent)) && ENbr(t->parent)->size == t->parent->size)
-        split(ENbr(t->parent));
+        splitHelper(ENbr(t->parent));
     }
     else if (t==t->parent->sw) {
       if (isLeaf(SNbr(t->parent)) && SNbr(t->parent)->size == t->parent->size)
-        split(SNbr(t->parent));
+        splitHelper(SNbr(t->parent));
       if (isLeaf(WNbr(t->parent)) && WNbr(t->parent)->size == t->parent->size)
-        split(WNbr(t->parent));
+        splitHelper(WNbr(t->parent));
+    }
+    else if (t==t->parent->nw) {
+      if (isLeaf(NNbr(t->parent)) && NNbr(t->parent)->size == t->parent->size)
+        splitHelper(NNbr(t->parent));
+      if (isLeaf(WNbr(t->parent)) && WNbr(t->parent)->size == t->parent->size)
+        splitHelper(WNbr(t->parent));
     }
   }
 }
