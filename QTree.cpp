@@ -174,7 +174,21 @@ QTree::Node *QTree::SNbr(Node *t)
  */
 QTree::Node *QTree::ENbr(Node *t)
 {
-  
+  if (t==NULL || t->parent==NULL)
+    return NULL;
+  Node *ret = NULL;
+  if (t == t->parent->ne) // t is upper right of its parent
+    ret = ENbr(t->parent)->nw;
+  else if (t == t->parent->nw) // upper left
+    ret = t->parent->ne;
+  else if (t == t->parent->se)
+    ret = ENbr(t->parent)->sw;
+  else if (t == t->parent->sw)
+    ret = t->parent->se;
+  if (ret && isLeaf(ret))
+    return ret;
+  else
+    return NULL;
   /* YOUR CODE HERE */
 }
 
@@ -184,7 +198,21 @@ QTree::Node *QTree::ENbr(Node *t)
  */
 QTree::Node *QTree::WNbr(Node *t)
 {
-
+  if (t==NULL || t->parent==NULL)
+    return NULL;
+  Node *ret = NULL;
+  if (t == t->parent->ne) // t is upper right of its parent
+    ret = ENbr(t->parent)->nw;
+  else if (t == t->parent->nw) // upper left
+    ret = t->parent->ne;
+  else if (t == t->parent->se)
+    ret = ENbr(t->parent)->sw;
+  else if (t == t->parent->sw)
+    ret = t->parent->se;
+  if (ret && isLeaf(ret))
+    return ret;
+  else
+    return NULL;
   /* YOUR CODE HERE */
 }
 
