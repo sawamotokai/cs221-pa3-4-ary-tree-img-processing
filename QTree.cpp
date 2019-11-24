@@ -27,10 +27,11 @@ QTree::Node::Node(PNG &im, pair<int, int> ul, int sz, Node *par)
 
 // Defined by Kai
 QTree::Node::Node(Node *other, Node* parent)
-    : upLeft(other->upLeft), size(other->size), parent(parent), nw(other->nw), ne(other->ne), sw(other->sw), se(other->se), var(other->var), avg(other->avg)
+    : upLeft(other->upLeft), size(other->size), parent(parent), nw(other->nw), ne(other->ne), sw(other->sw), se(other->se)
 {
+  this->var = other->var;
+  this->avg = other->avg;
 }
-
 
 QTree::~QTree()
 {
@@ -91,23 +92,17 @@ bool QTree::isLeaf(Node *t)
 
 void QTree::split(Node *t)
 {
-
   /* YOUR CODE HERE */
   if (t == NULL || numLeaf >= leafBound || t->size == 1)
     return;
-
   t->nw = new Node(im, make_pair(t->upLeft.first, t->upLeft.second), t->size / 2, t);
   nodesQ.push(t->nw);
-
   t->ne = new Node(im, make_pair(t->upLeft.first+t->size/2, t->upLeft.second), t->size / 2, t);
   nodesQ.push(t->ne);
-
   t->sw = new Node(im, make_pair(t->upLeft.first, t->upLeft.second+t->size/2), t->size / 2, t);
   nodesQ.push(t->sw);
-
   t->se = new Node(im, make_pair(t->upLeft.first+t->size/2, t->upLeft.second+t->size/2), t->size / 2, t);
   nodesQ.push(t->se);
-
   numLeaf += 4;
   // FOR BALANCED QTREES-------------------------------------------------
   // A split might cause one or two nbrs of the parent of t to split
@@ -118,6 +113,32 @@ void QTree::split(Node *t)
   // the North and West (or North and East or South and West or
   // South and East) nbrs of t->parent have children. If they don't
   // we need to split them.
+  if (balanced) {
+    if (t==t->parent->ne) {
+      if (isLeaf(NNbr(t->parent)) && NNbr(t->parent)->size == t->parent->size)
+      split(NNbr(t->parent));
+      if (isLeaf(ENbr(t->parent)) && ENbr(t->parent)->size == t->parent->size)
+        split(ENbr(t->parent));
+    }
+    else if (t==t->parent->nw) {
+      if (isLeaf(NNbr(t->parent)) && NNbr(t->parent)->size == t->parent->size)
+        split(NNbr(t->parent));
+      if (isLeaf(WNbr(t->parent)) && WNbr(t->parent)->size == t->parent->size)
+        split(WNbr(t->parent));
+    }
+    else if (t==t->parent->se) {
+      if (isLeaf(SNbr(t->parent)) && SNbr(t->parent)->size == t->parent->size)
+        split(SNbr(t->parent));
+      if (isLeaf(ENbr(t->parent)) && ENbr(t->parent)->size == t->parent->size)
+        split(ENbr(t->parent));
+    }
+    else if (t==t->parent->sw) {
+      if (isLeaf(SNbr(t->parent)) && SNbr(t->parent)->size == t->parent->size)
+        split(SNbr(t->parent));
+      if (isLeaf(WNbr(t->parent)) && WNbr(t->parent)->size == t->parent->size)
+        split(WNbr(t->parent));
+    }
+  }
 }
 
 /* NNbr(t)
@@ -129,12 +150,14 @@ QTree::Node *QTree::NNbr(Node *t)
   if (t==NULL || t->parent==NULL)
     return NULL;
   Node *ret = NULL;
-  if (t == t->parent->ne) // t is upper right of its parent
+  if (t == t->parent->ne) {// t is upper right of its parent
     if (NNbr(t->parent))
       ret = NNbr(t->parent)->se;
-  else if (t == t->parent->nw) // upper left
+  }
+  else if (t == t->parent->nw) {// upper left
     if (NNbr(t->parent))
       ret = NNbr(t->parent)->sw;
+  }
   else if (t == t->parent->se)
     ret = t->parent->ne;
   else if (t == t->parent->sw)
@@ -159,12 +182,14 @@ QTree::Node *QTree::SNbr(Node *t)
     ret = t->parent->se;
   else if (t == t->parent->nw) // upper left
     ret = t->parent->sw;
-  else if (t == t->parent->se)
+  else if (t == t->parent->se) {
     if (SNbr(t->parent))
       ret = SNbr(t->parent)->ne;
-  else if (t == t->parent->sw)
+  }
+  else if (t == t->parent->sw) {
     if (SNbr(t->parent))
       ret = SNbr(t->parent)->nw;
+  }
   if (ret && isLeaf(ret))
     return ret;
   else
@@ -182,13 +207,17 @@ QTree::Node *QTree::ENbr(Node *t)
     return NULL;
   Node *ret = NULL;
   if (t == t->parent->ne) // t is upper right of its parent
+  {
     if (ENbr(t->parent))
       ret = ENbr(t->parent)->nw;
+  }
   else if (t == t->parent->nw) // upper left
     ret = t->parent->ne;
   else if (t == t->parent->se)
-    if (ENbr(t->parent))
+    {
+      if (ENbr(t->parent))
       ret = ENbr(t->parent)->sw;
+    }
   else if (t == t->parent->sw)
     ret = t->parent->se;
   if (ret && isLeaf(ret))
@@ -209,14 +238,16 @@ QTree::Node *QTree::WNbr(Node *t)
   Node *ret = NULL;
   if (t == t->parent->ne) // t is upper right of its parent
     ret = t->parent->nw;
-  else if (t == t->parent->nw) // upper left
+  else if (t == t->parent->nw) {// upper left
     if (WNbr(t->parent))
       ret = WNbr(t->parent)->ne;
+  }
   else if (t == t->parent->se)
     ret = t->parent->sw;
-  else if (t == t->parent->sw)
+  else if (t == t->parent->sw) {
     if (WNbr(t->parent))
       ret = WNbr(t->parent)->se;
+  }
   if (ret && isLeaf(ret))
     return ret;
   else
@@ -257,8 +288,6 @@ void QTree::writeHelper(Node *node)
       }
     }
   }
-  
-  
 }
 
 void QTree::clear()
@@ -277,10 +306,6 @@ void QTree::clearHelper(Node *node) {
   clearHelper(node->se);
   delete (node);
 }
-
-
-
-
 
 void QTree::copyHelper(Node *&subRoot, Node* origNode)
 {
