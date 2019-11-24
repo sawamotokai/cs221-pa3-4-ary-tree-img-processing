@@ -130,9 +130,11 @@ QTree::Node *QTree::NNbr(Node *t)
     return NULL;
   Node *ret = NULL;
   if (t == t->parent->ne) // t is upper right of its parent
-    ret = NNbr(t->parent)->se;
+    if (NNbr(t->parent))
+      ret = NNbr(t->parent)->se;
   else if (t == t->parent->nw) // upper left
-    ret = NNbr(t->parent)->sw;
+    if (NNbr(t->parent))
+      ret = NNbr(t->parent)->sw;
   else if (t == t->parent->se)
     ret = t->parent->ne;
   else if (t == t->parent->sw)
@@ -158,9 +160,11 @@ QTree::Node *QTree::SNbr(Node *t)
   else if (t == t->parent->nw) // upper left
     ret = t->parent->sw;
   else if (t == t->parent->se)
-    ret = SNbr(t->parent)->ne;
+    if (SNbr(t->parent))
+      ret = SNbr(t->parent)->ne;
   else if (t == t->parent->sw)
-    ret = SNbr(t->parent)->nw;
+    if (SNbr(t->parent))
+      ret = SNbr(t->parent)->nw;
   if (ret && isLeaf(ret))
     return ret;
   else
@@ -178,11 +182,13 @@ QTree::Node *QTree::ENbr(Node *t)
     return NULL;
   Node *ret = NULL;
   if (t == t->parent->ne) // t is upper right of its parent
-    ret = ENbr(t->parent)->nw;
+    if (ENbr(t->parent))
+      ret = ENbr(t->parent)->nw;
   else if (t == t->parent->nw) // upper left
     ret = t->parent->ne;
   else if (t == t->parent->se)
-    ret = ENbr(t->parent)->sw;
+    if (ENbr(t->parent))
+      ret = ENbr(t->parent)->sw;
   else if (t == t->parent->sw)
     ret = t->parent->se;
   if (ret && isLeaf(ret))
@@ -202,13 +208,15 @@ QTree::Node *QTree::WNbr(Node *t)
     return NULL;
   Node *ret = NULL;
   if (t == t->parent->ne) // t is upper right of its parent
-    ret = ENbr(t->parent)->nw;
+    ret = t->parent->nw;
   else if (t == t->parent->nw) // upper left
-    ret = t->parent->ne;
+    if (WNbr(t->parent))
+      ret = WNbr(t->parent)->ne;
   else if (t == t->parent->se)
-    ret = ENbr(t->parent)->sw;
+    ret = t->parent->sw;
   else if (t == t->parent->sw)
-    ret = t->parent->se;
+    if (WNbr(t->parent))
+      ret = WNbr(t->parent)->se;
   if (ret && isLeaf(ret))
     return ret;
   else
@@ -218,7 +226,6 @@ QTree::Node *QTree::WNbr(Node *t)
 
 bool QTree::write(string const &fileName)
 {
-
   /* YOUR CODE HERE */
   writeHelper(root);
   // include the following line to write the image to file.
