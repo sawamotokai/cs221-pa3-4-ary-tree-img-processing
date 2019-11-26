@@ -164,7 +164,7 @@ private:
   /* =================== private PA3 functions ============== */
   void writeHelper(Node *node);
   void clearHelper(Node* node);
-  void copyHelper(Node *&subRoot, Node* origNode);
+  void copyHelper(Node *subRoot, Node* origNode);
   void splitHelper(Node *t);
   /**
    * Private helper function for the constructor. Splits the given

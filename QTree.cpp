@@ -72,7 +72,6 @@ QTree::QTree(PNG &imIn, int leafB, RGBAPixel frameC, bool bal)
   while (!nodesQ.empty()) {
     Node* t = nodesQ.top(); 
     nodesQ.pop();
-    numLeaf--;
     split(t);
   }
 }
@@ -88,7 +87,6 @@ QTree::QTree(PNG &imIn, int leafB, bool bal)
   while (!nodesQ.empty()) {
     Node* t = nodesQ.top(); 
     nodesQ.pop();
-    numLeaf--;
     split(t);
   }
 }
@@ -111,13 +109,13 @@ void QTree::splitHelper(Node *t) {
   t->nw = new Node(im, make_pair(t->upLeft.first, t->upLeft.second), t->size / 2, t);
   nodesQ.push(t->nw);
   
-  numLeaf += 4;
+  numLeaf += 3;
 }
 
 void QTree::split(Node *t)
 {
   /* YOUR CODE HERE */
-  if (t == NULL || numLeaf >= leafBound || t->size <= 1)
+  if (t == NULL || numLeaf >= leafBound || t->size <= 1 || !isLeaf(t))
     return;
   splitHelper(t);
   // FOR BALANCED QTREES-------------------------------------------------
@@ -327,7 +325,7 @@ void QTree::clearHelper(Node *node) {
   delete (node);
 }
 
-void QTree::copyHelper(Node *&subRoot, Node* origNode)
+void QTree::copyHelper(Node *subRoot, Node* origNode)
 {
   if (origNode==NULL)
     return;
