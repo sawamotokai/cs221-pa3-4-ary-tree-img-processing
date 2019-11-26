@@ -49,7 +49,7 @@ QTree::QTree(PNG &imIn, int leafB, RGBAPixel frameC, bool bal)
     : leafBound(leafB), balanced(bal), drawFrame(true), frameColor(frameC)
 {
   im = noFrame = imIn;
-  int nodeSize = biggestPow2(imIn.width());
+  int nodeSize = biggestPow2(min(imIn.width(), imIn.height()));
   numLeaf = 1;
   root = new Node(im, make_pair(0, 0), nodeSize, NULL);
   nodesQ.push(root);
@@ -65,7 +65,7 @@ QTree::QTree(PNG &imIn, int leafB, bool bal)
     : leafBound(leafB), balanced(bal), drawFrame(false)
 {
   im = noFrame = imIn;
-  int nodeSize = biggestPow2(imIn.width());
+  int nodeSize = biggestPow2(min(imIn.width(), imIn.height()));
   numLeaf = 1;
   root = new Node(im, make_pair(0, 0), nodeSize, NULL);
   nodesQ.push(root);
@@ -157,22 +157,22 @@ QTree::Node *QTree::NNbr(Node *t)
 {
   if (t == NULL || t->parent == NULL)
     return NULL;
-  Node *ret = NULL;
+  // Node *ret = NULL;
   if (t == t->parent->ne)
   { // t is upper right of its parent
     if (NNbr(t->parent))
-      ret = NNbr(t->parent)->se;
+      return NNbr(t->parent)->se;
   }
   else if (t == t->parent->nw)
   { // upper left
     if (NNbr(t->parent))
-      ret = NNbr(t->parent)->sw;
+      return NNbr(t->parent)->sw;
   }
   else if (t == t->parent->se)
-    ret = t->parent->ne;
+    return t->parent->ne;
   else if (t == t->parent->sw)
-    ret = t->parent->nw;
-  return ret;
+    return t->parent->nw;
+  return NULL;
   /* YOUR CODE HERE */
 }
 
@@ -186,22 +186,21 @@ QTree::Node *QTree::SNbr(Node *t)
   {
     return NULL;
   }
-  Node *ret = NULL;
   if (t == t->parent->ne) // t is upper right of its parent
-    ret = t->parent->se;
+    return t->parent->se;
   else if (t == t->parent->nw) // upper left
-    ret = t->parent->sw;
+    return t->parent->sw;
   else if (t == t->parent->se)
   {
     if (SNbr(t->parent))
-      ret = SNbr(t->parent)->ne;
+      return SNbr(t->parent)->ne;
   }
   else if (t == t->parent->sw)
   {
     if (SNbr(t->parent))
-      ret = SNbr(t->parent)->nw;
+      return SNbr(t->parent)->nw;
   }
-  return ret;
+  return NULL;
   /* YOUR CODE HERE */
 }
 
@@ -213,22 +212,21 @@ QTree::Node *QTree::ENbr(Node *t)
 {
   if (t == NULL || t->parent == NULL)
     return NULL;
-  Node *ret = NULL;
   if (t == t->parent->ne) // t is upper right of its parent
   {
     if (ENbr(t->parent))
-      ret = ENbr(t->parent)->nw;
+      return ENbr(t->parent)->nw;
   }
   else if (t == t->parent->nw) // upper left
-    ret = t->parent->ne;
+    return t->parent->ne;
   else if (t == t->parent->se)
   {
     if (ENbr(t->parent))
-      ret = ENbr(t->parent)->sw;
+      return ENbr(t->parent)->sw;
   }
   else if (t == t->parent->sw)
-    ret = t->parent->se;
-  return ret;
+    return t->parent->se;
+  return NULL;
   /* YOUR CODE HERE */
 }
 
@@ -240,22 +238,22 @@ QTree::Node *QTree::WNbr(Node *t)
 {
   if (t == NULL || t->parent == NULL)
     return NULL;
-  Node *ret = NULL;
+
   if (t == t->parent->ne) // t is upper right of its parent
-    ret = t->parent->nw;
+    return t->parent->nw;
   else if (t == t->parent->nw)
   { // upper left
     if (WNbr(t->parent))
-      ret = WNbr(t->parent)->ne;
+      return WNbr(t->parent)->ne;
   }
   else if (t == t->parent->se)
-    ret = t->parent->sw;
+    return t->parent->sw;
   else if (t == t->parent->sw)
   {
     if (WNbr(t->parent))
-      ret = WNbr(t->parent)->se;
+      return WNbr(t->parent)->se;
   }
-  return ret;
+  return NULL;
   /* YOUR CODE HERE */
 }
 
@@ -287,6 +285,8 @@ void QTree::writeHelper(Node *node)
       for (int y = yStart; y < yStart + node->size; y++)
       {
         RGBAPixel *pix = im.getPixel(x, y);
+        RGBAPixel *pixNoFrame = noFrame.getPixel(x, y);
+        *pixNoFrame = node->avg;
         if (drawFrame && (x == xStart || y == yStart || x == xStart + node->size - 1 || y == yStart + node->size - 1))
           *pix = frameColor;
         else
@@ -299,6 +299,9 @@ void QTree::writeHelper(Node *node)
 void QTree::clear()
 {
   clearHelper(root);
+  // delete (im);
+  // delete(noFrame);
+  // delete (frameColor);
   /* YOUR CODE HERE */
 }
 
@@ -306,12 +309,11 @@ void QTree::clearHelper(Node *node)
 {
   if (node == NULL)
     return;
-  clearHelper(node->ne);
   clearHelper(node->nw);
+  clearHelper(node->ne);
   clearHelper(node->sw);
   clearHelper(node->se);
   delete node;
-  node = NULL;
 }
 
 void QTree::copyHelper(Node *subRoot, Node *origNode)
@@ -322,23 +324,24 @@ void QTree::copyHelper(Node *subRoot, Node *origNode)
   subRoot->nw = new Node(noFrame, origNode->nw->upLeft, origNode->nw->size, subRoot);
   subRoot->se = new Node(noFrame, origNode->se->upLeft, origNode->se->size, subRoot);
   subRoot->sw = new Node(noFrame, origNode->sw->upLeft, origNode->sw->size, subRoot);
-  copyHelper(root->ne, origNode->ne);
-  copyHelper(root->nw, origNode->nw);
-  copyHelper(root->se, origNode->se);
-  copyHelper(root->sw, origNode->sw);
+  copyHelper(subRoot->ne, origNode->ne);
+  copyHelper(subRoot->nw, origNode->nw);
+  copyHelper(subRoot->se, origNode->se);
+  copyHelper(subRoot->sw, origNode->sw);
 }
+
 
 void QTree::copy(const QTree &orig)
 {
-  numLeaf = orig.numLeaf;
-  im = orig.im;
-  noFrame = orig.noFrame;
-  leafBound = orig.leafBound;
-  balanced = orig.balanced;
-  drawFrame = orig.drawFrame;
-  frameColor = orig.frameColor;
+  this->numLeaf = orig.numLeaf;
+  this->im = orig.im;
+  this->leafBound = orig.leafBound;
+  this->balanced = orig.balanced;
+  this->drawFrame = orig.drawFrame;
+  this->noFrame = orig.noFrame;
+  this->frameColor = orig.frameColor;
 
-  root = new Node(noFrame, orig.root->upLeft, orig.root->size, NULL);
-  copyHelper(root, orig.root);
+  this->root = new Node(noFrame, orig.root->upLeft, orig.root->size, NULL);
+  copyHelper(orig.root, root);
   /* YOUR CODE HERE */
 }
