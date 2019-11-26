@@ -92,34 +92,16 @@ void QTree::splitHelper(Node *t) {
   nodesQ.push(t->sw);
   t->nw = new Node(im, make_pair(t->upLeft.first, t->upLeft.second), t->size / 2, t);
   nodesQ.push(t->nw);
-  
   numLeaf += 3;
-}
 
-void QTree::split(Node *t)
-{
-  /* YOUR CODE HERE */
-  if (t == NULL || numLeaf >= leafBound || t->size <= 1 || !isLeaf(t))
-    return;
-  splitHelper(t);
-  // FOR BALANCED QTREES-------------------------------------------------
-  // A split might cause one or two nbrs of the parent of t to split
-  // to maintain balance.  Note that these two nbrs exist (unless they're
-  // not in the image region) because the current set of leaves are
-  // balanced.
-  // if( t is a NW (or NE or SW or SE) child ) then we need to check that
-  // the North and West (or North and East or South and West or
-  // South and East) nbrs of t->parent have children. If they don't
-  // we need to split them.
   if (balanced) {
     if (t->parent==NULL) 
       return;
-    if (t == t->parent->ne)
-      {
-        if (isLeaf(NNbr(t->parent)) && NNbr(t->parent)->size == t->parent->size)
-          splitHelper(NNbr(t->parent));
-        if (isLeaf(ENbr(t->parent)) && ENbr(t->parent)->size == t->parent->size)
-          splitHelper(ENbr(t->parent));
+    if (t == t->parent->ne) {
+      if (isLeaf(NNbr(t->parent)) && NNbr(t->parent)->size == t->parent->size)
+        splitHelper(NNbr(t->parent));
+      if (isLeaf(ENbr(t->parent)) && ENbr(t->parent)->size == t->parent->size)
+        splitHelper(ENbr(t->parent));
     }
     else if (t==t->parent->se) {
       if (isLeaf(SNbr(t->parent)) && SNbr(t->parent)->size == t->parent->size)
@@ -140,6 +122,24 @@ void QTree::split(Node *t)
         splitHelper(WNbr(t->parent));
     }
   }
+}
+
+void QTree::split(Node *t)
+{
+  /* YOUR CODE HERE */
+  if (t == NULL || numLeaf >= leafBound || t->size <= 1 || !isLeaf(t))
+    return;
+  splitHelper(t);
+  // FOR BALANCED QTREES-------------------------------------------------
+  // A split might cause one or two nbrs of the parent of t to split
+  // to maintain balance.  Note that these two nbrs exist (unless they're
+  // not in the image region) because the current set of leaves are
+  // balanced.
+  // if( t is a NW (or NE or SW or SE) child ) then we need to check that
+  // the North and West (or North and East or South and West or
+  // South and East) nbrs of t->parent have children. If they don't
+  // we need to split them.
+
 }
 
 /* NNbr(t)
