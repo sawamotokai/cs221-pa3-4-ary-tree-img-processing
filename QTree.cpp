@@ -25,22 +25,6 @@ QTree::Node::Node(PNG &im, pair<int, int> ul, int sz, Node *par)
   var = varAndAvg(im, ul, size, avg);
 }
 
-// Defined by Kai
-QTree::Node::Node(Node *other, Node* parent)
-{
-  if (other == NULL)
-    return;
-  this->upLeft = other->upLeft;
-  this->size = other->size;
-  this->parent = parent;
-  this->nw = other->nw;
-  this->ne = other->ne;
-  this->sw = other->sw;
-  this->se = other->se;
-  this->var = other->var;
-  this->avg = other->avg;
-}
-
 QTree::~QTree()
 {
   clear();
@@ -64,7 +48,7 @@ QTree &QTree::operator=(const QTree &rhs)
 QTree::QTree(PNG &imIn, int leafB, RGBAPixel frameC, bool bal)
     : leafBound(leafB), balanced(bal), drawFrame(true), frameColor(frameC)
 {
-  im = imIn;                
+  im = noFrame = imIn;
   int nodeSize = biggestPow2(imIn.width());
   numLeaf = 1;   
   root = new Node(im, make_pair(0, 0), nodeSize, NULL);
@@ -79,7 +63,7 @@ QTree::QTree(PNG &imIn, int leafB, RGBAPixel frameC, bool bal)
 QTree::QTree(PNG &imIn, int leafB, bool bal)
     : leafBound(leafB), balanced(bal), drawFrame(false)
 {
-  im = imIn;                
+  im = noFrame = imIn;                
   int nodeSize = biggestPow2(imIn.width());
   numLeaf = 1;   
   root = new Node(im, make_pair(0, 0), nodeSize, NULL);
@@ -179,10 +163,7 @@ QTree::Node *QTree::NNbr(Node *t)
     ret = t->parent->ne;
   else if (t == t->parent->sw)
     ret = t->parent->nw;
-  if (ret && isLeaf(ret))
-    return ret;
-  else
-    return NULL;
+  return ret;
   /* YOUR CODE HERE */
 }
 
@@ -208,10 +189,7 @@ QTree::Node *QTree::SNbr(Node *t)
     if (SNbr(t->parent))
       ret = SNbr(t->parent)->nw;
   }
-  if (ret && isLeaf(ret))
-    return ret;
-  else
-    return NULL;
+  return ret;
   /* YOUR CODE HERE */
 }
 
@@ -238,10 +216,7 @@ QTree::Node *QTree::ENbr(Node *t)
     }
   else if (t == t->parent->sw)
     ret = t->parent->se;
-  if (ret && isLeaf(ret))
-    return ret;
-  else
-    return NULL;
+  return ret;
   /* YOUR CODE HERE */
 }
 
@@ -266,10 +241,7 @@ QTree::Node *QTree::WNbr(Node *t)
     if (WNbr(t->parent))
       ret = WNbr(t->parent)->se;
   }
-  if (ret && isLeaf(ret))
-    return ret;
-  else
-    return NULL;
+  return ret;
   /* YOUR CODE HERE */
 }
 
@@ -311,7 +283,6 @@ void QTree::writeHelper(Node *node)
 void QTree::clear()
 {
   clearHelper(root);
-  // delete this;
   /* YOUR CODE HERE */
 }
 
@@ -322,21 +293,18 @@ void QTree::clearHelper(Node *node) {
   clearHelper(node->nw);
   clearHelper(node->sw);
   clearHelper(node->se);
-  delete (node);
+  delete node;
+  node = NULL;
 }
 
 void QTree::copyHelper(Node *subRoot, Node* origNode)
 {
   if (origNode==NULL || origNode->ne==NULL)
     return;
-  subRoot->ne = new Node(im, origNode->ne->upLeft, origNode->ne->size, subRoot);
-  // subRoot->ne = new Node(origNode->ne, subRoot);
-  subRoot->nw = new Node(im, origNode->nw->upLeft, origNode->nw->size, subRoot);
-  // subRoot->nw = new Node(origNode->nw, subRoot);
-  // subRoot->se = new Node(origNode->se, subRoot);
-  subRoot->se = new Node(im, origNode->se->upLeft, origNode->se->size, subRoot);
-  // subRoot->sw = new Node(origNode->sw, subRoot);
-  subRoot->sw = new Node(im, origNode->sw->upLeft, origNode->sw->size, subRoot);
+  subRoot->ne = new Node(noFrame, origNode->ne->upLeft, origNode->ne->size, subRoot);
+  subRoot->nw = new Node(noFrame, origNode->nw->upLeft, origNode->nw->size, subRoot);
+  subRoot->se = new Node(noFrame, origNode->se->upLeft, origNode->se->size, subRoot);
+  subRoot->sw = new Node(noFrame, origNode->sw->upLeft, origNode->sw->size, subRoot);
   copyHelper(root->ne, origNode->ne);
   copyHelper(root->nw, origNode->nw);
   copyHelper(root->se, origNode->se);
@@ -345,15 +313,15 @@ void QTree::copyHelper(Node *subRoot, Node* origNode)
 
 void QTree::copy(const QTree &orig)
 {
-  // root = new Node(orig.root, NULL);
   numLeaf = orig.numLeaf;
   im = orig.im;
+  noFrame = orig.noFrame;
   leafBound = orig.leafBound;
   balanced = orig.balanced;
   drawFrame = orig.drawFrame;
   frameColor = orig.frameColor;
-  root = new Node(im, orig.root->upLeft, orig.root->size, NULL);
-
+  
+  root = new Node(noFrame, orig.root->upLeft, orig.root->size, NULL);
   copyHelper(root, orig.root);
   /* YOUR CODE HERE */
 }

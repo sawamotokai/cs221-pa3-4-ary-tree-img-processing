@@ -39,7 +39,6 @@ private:
   public:
     // Node constructors
     Node(PNG &imIn, pair<int, int> ul, int size, Node *par);
-    Node(Node *other, Node* parent);
 
     pair<int, int> upLeft; // upper-left coords of Node's subimage
     int size;              // side length of Node's subimage in pixels
@@ -153,6 +152,7 @@ private:
   Node *root;             // ptr to the root of the QTree
   int numLeaf;            // number of leaves in quad tree
   PNG im;                 // image
+  PNG noFrame;            // original image without frame
   int leafBound;          // approx. upper bound on number of leaves in QTree
   bool balanced = false;  // true=create balanced QTree
   bool drawFrame = false; // true=draw 1 pixel frame around every leaf square
