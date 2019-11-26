@@ -327,29 +327,16 @@ void QTree::clearHelper(Node *node) {
 
 void QTree::copyHelper(Node *subRoot, Node* origNode)
 {
-  if (origNode==NULL)
+  if (origNode==NULL || origNode->ne==NULL)
     return;
-
-  if (origNode->ne != NULL)
-    subRoot->ne = new Node(origNode->ne, subRoot);
-  else
-    subRoot->ne = NULL;
-
-  if (origNode->nw != NULL)
-    subRoot->nw = new Node(origNode->nw, subRoot);
-  else
-    subRoot->nw = NULL;
-
-  if (origNode->se != NULL)
-    subRoot->se = new Node(origNode->se, subRoot);
-  else
-    subRoot->se = NULL;
-
-  if (origNode->sw != NULL)
-    subRoot->sw = new Node(origNode->sw, subRoot);
-  else
-    subRoot->sw = NULL;
-
+  subRoot->ne = new Node(im, origNode->ne->upLeft, origNode->ne->size, subRoot);
+  // subRoot->ne = new Node(origNode->ne, subRoot);
+  subRoot->nw = new Node(im, origNode->nw->upLeft, origNode->nw->size, subRoot);
+  // subRoot->nw = new Node(origNode->nw, subRoot);
+  // subRoot->se = new Node(origNode->se, subRoot);
+  subRoot->se = new Node(im, origNode->se->upLeft, origNode->se->size, subRoot);
+  // subRoot->sw = new Node(origNode->sw, subRoot);
+  subRoot->sw = new Node(im, origNode->sw->upLeft, origNode->sw->size, subRoot);
   copyHelper(root->ne, origNode->ne);
   copyHelper(root->nw, origNode->nw);
   copyHelper(root->se, origNode->se);
@@ -358,13 +345,15 @@ void QTree::copyHelper(Node *subRoot, Node* origNode)
 
 void QTree::copy(const QTree &orig)
 {
-  root = new Node(orig.root, NULL);
+  // root = new Node(orig.root, NULL);
   numLeaf = orig.numLeaf;
   im = orig.im;
   leafBound = orig.leafBound;
   balanced = orig.balanced;
   drawFrame = orig.drawFrame;
   frameColor = orig.frameColor;
+  root = new Node(im, orig.root->upLeft, orig.root->size, NULL);
+
   copyHelper(root, orig.root);
   /* YOUR CODE HERE */
 }
